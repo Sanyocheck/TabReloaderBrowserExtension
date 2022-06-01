@@ -1,5 +1,5 @@
 using Blazored.LocalStorage;
-using ChromeTabReloaderExtension;
+using TabReloaderBrowserExtension;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using WebExtensions.Net;
