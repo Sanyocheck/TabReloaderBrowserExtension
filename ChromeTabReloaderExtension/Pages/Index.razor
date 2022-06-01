@@ -1,0 +1,62 @@
+@page "/index.html"
+
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+
+@inject ILocalStorageService LocalStorageService
+
+<PageTitle>Page Reloader</PageTitle>
+
+<h1>Page Reloader</h1>
+
+<div class="form-check form-switch">
+    <input @onchange="async eventArgs => { await ChangeWorkingStateAsync(eventArgs?.Value ?? false); }" class="form-check-input" type="checkbox" id="stateSwitchCheck" checked="@_isEnabled">
+    <label class="form-check-label" for="stateSwitchCheck">@(_isEnabled ? "Enabled" : "Disabled")</label>
+</div>
+<div class="form-group">
+    <label>Enter <a href="https://developer.chrome.com/docs/extensions/mv3/match_patterns/" target="_blank">Match Pattern</a> Url</label>
+    <input @bind="_url" class="form-control" placeholder="https://www.google.com/*" />
+</div>
+<div class="form-group">
+    <label>Reload after (sec.)</label>
+    <input @bind="_delay" class="form-control" />
+</div>
+<br />
+<div class="form-group">
+    <button @onclick="async () => await SaveDataAsync()" class="btn btn-primary w-100">Save</button>
+</div>
+
+@code
+{
+    private string _url { get; set; }
+
+    private int _delay { get; set; }
+
+    private bool _isEnabled { get; set; }
+
+    private async Task SaveDataAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_url) && _delay > 0)
+        {
+            await LocalStorageService.SetItemAsStringAsync("url", _url);
+            await LocalStorageService.SetItemAsync<int>("delay", _delay);
+        }
+    }
+
+    private async Task ChangeWorkingStateAsync(object state)
+    {
+        bool? isEnabled = state as bool?;
+
+        if (isEnabled != null && isEnabled.HasValue)
+        {
+            _isEnabled = isEnabled.Value;
+            await LocalStorageService.SetItemAsync<bool>("isEnabled", _isEnabled);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _url = await LocalStorageService.GetItemAsStringAsync("url");
+        _isEnabled = await LocalStorageService.GetItemAsync<bool>("isEnabled");
+        _delay = await LocalStorageService.GetItemAsync<int?>("delay") ?? 60;
+    }
+}

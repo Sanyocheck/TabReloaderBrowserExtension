@@ -1,0 +1,50 @@
+﻿@page "/background.html"
+
+@using WebExtensions.Net.Tabs
+@using WebExtensions.Net.Windows
+
+@inherits Blazor.BrowserExtension.Pages.BackgroundPage
+
+@inject IWebExtensionsApi WebExtensionsApi;
+@inject ILocalStorageService LocalStorageService
+<h3>Background</h3>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        new Task(async () =>
+             {
+                 while (true)
+                 {
+                     bool isEnabled = await LocalStorageService.GetItemAsync<bool>("isEnabled");
+
+                     if (isEnabled)
+                     {
+                         string url = await LocalStorageService.GetItemAsStringAsync("url");
+                         int delay = await LocalStorageService.GetItemAsync<int?>("delay") ?? 60;
+
+                         if (!string.IsNullOrWhiteSpace(url) && delay > 0)
+                         {
+                             QueryInfo queryInfo = new QueryInfo()
+                                 {
+                                     Url = url
+                                 };
+
+                             var tabs = await WebExtensionsApi.Tabs.Query(queryInfo);
+
+                             foreach (Tab tab in tabs ?? new List<Tab>())
+                             {
+                                 await WebExtensionsApi.Tabs.Reload(tab.Id, new());
+                             }
+
+                             await Task.Delay(TimeSpan.FromSeconds(delay - 1));
+                         }
+                     }
+
+                     await Task.Delay(TimeSpan.FromSeconds(1));
+                 }
+             }).Start();
+    }
+
+}
