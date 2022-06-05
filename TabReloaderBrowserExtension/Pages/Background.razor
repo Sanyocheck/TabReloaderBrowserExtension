@@ -17,30 +17,34 @@
              {
                  while (true)
                  {
-                     bool isEnabled = await LocalStorageService.GetItemAsync<bool>("isEnabled");
-
-                     if (isEnabled)
+                     try
                      {
-                         string url = await LocalStorageService.GetItemAsStringAsync("url");
-                         int delay = await LocalStorageService.GetItemAsync<int?>("delay") ?? 60;
+                         bool isEnabled = await LocalStorageService.GetItemAsync<bool>("isEnabled");
 
-                         if (!string.IsNullOrWhiteSpace(url) && delay > 0)
+                         if (isEnabled)
                          {
-                             QueryInfo queryInfo = new QueryInfo()
-                                 {
-                                     Url = url
-                                 };
+                             string url = await LocalStorageService.GetItemAsStringAsync("url");
+                             int delay = await LocalStorageService.GetItemAsync<int?>("delay") ?? 60;
 
-                             var tabs = await WebExtensionsApi.Tabs.Query(queryInfo);
-
-                             foreach (Tab tab in tabs ?? new List<Tab>())
+                             if (!string.IsNullOrWhiteSpace(url) && delay > 0)
                              {
-                                 await WebExtensionsApi.Tabs.Reload(tab.Id, new());
-                             }
+                                 QueryInfo queryInfo = new QueryInfo()
+                                     {
+                                         Url = url
+                                     };
 
-                             await Task.Delay(TimeSpan.FromSeconds(delay - 1));
+                                 var tabs = await WebExtensionsApi.Tabs.Query(queryInfo);
+
+                                 foreach (Tab tab in tabs ?? new List<Tab>())
+                                 {
+                                     await WebExtensionsApi.Tabs.Reload(tab.Id, new());
+                                 }
+
+                                 await Task.Delay(TimeSpan.FromSeconds(delay - 1));
+                             }
                          }
                      }
+                     catch { }
 
                      await Task.Delay(TimeSpan.FromSeconds(1));
                  }
