@@ -46,7 +46,7 @@
     {
         bool? isEnabled = state as bool?;
 
-        if (isEnabled != null && isEnabled.HasValue)
+        if (isEnabled.HasValue)
         {
             _isEnabled = isEnabled.Value;
             await LocalStorageService.SetItemAsync<bool>("isEnabled", _isEnabled);
